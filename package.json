@@ -1,0 +1,23 @@
+{
+  "name": "portalguard",
+  "version": "1.0.0",
+  "description": "Wallet-drainer protection for Portaldot: capped, expiring token permissions and a community drainer registry.",
+  "private": true,
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.js",
+    "deploy:portaldot": "hardhat run scripts/deploy.js --network portaldot"
+  },
+  "keywords": ["portaldot", "wallet-security", "erc20", "approvals"],
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "dotenv": "^18.0.9",
+    "hardhat": "^2.29.1"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.6.1"
+  }
+}
