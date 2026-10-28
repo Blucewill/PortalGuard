@@ -21,8 +21,9 @@ PortalGuard replaces unlimited approvals with **capped, expiring permissions**:
 - **DrainerRegistry**: anyone can report a suspicious address; confirmed drainers are
   flagged, and SafeApprove refuses to grant to or pay them.
 
-Coming next: a web app that scans a wallet's existing approvals on Portaldot, highlights
-risky ones and revokes them.
+- **Web app** (`web/`): scans any wallet's existing approvals on Portaldot, flags the risky
+  ones (unlimited amounts, whole-NFT-collection access, personal-wallet spenders, reported
+  drainers) and revokes them with one click. Share a scan with `?address=0x…`.
 
 ## Network
 
@@ -39,6 +40,22 @@ npm test                  # run the contract tests on a local simulated chain
 cp .env.example .env      # then put a TESTNET-ONLY private key in .env
 npm run deploy:portaldot  # deploy to the Portaldot testnet
 ```
+
+Web app:
+
+```bash
+cd web
+npm install
+npm run dev               # open the printed localhost link
+```
+
+### How the scanner works
+
+1. Reads every `Approval` and `ApprovalForAll` event the wallet ever emitted on Portaldot
+   (`eth_getLogs`, split into smaller block ranges if the RPC limits the range).
+2. Checks each one's state today (`allowance`, `getApproved`, `isApprovedForAll`), since
+   old approvals may already be used up or revoked.
+3. Rates the risk of each active approval and lets the owner revoke it from their wallet.
 
 ## Deployed contracts (Portaldot testnet)
 

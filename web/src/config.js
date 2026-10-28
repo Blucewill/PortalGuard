@@ -1,0 +1,17 @@
+export const PORTALDOT = {
+  chainId: 420420777,
+  chainIdHex: "0x190f1ca9",
+  name: "Portaldot Testnet V3",
+  rpcUrl: "https://test-evm-rpc-v3.portaldot.dev",
+  currency: { name: "POT", symbol: "POT", decimals: 18 },
+};
+
+// Filled in after deploying the contracts (npm run deploy:portaldot in the project root).
+// While null, the scanner skips the drainer-registry check.
+export const CONTRACTS = {
+  drainerRegistry: null,
+  safeApprove: null,
+};
+
+// A testnet wallet that already has approvals, so the scanner can be tried without connecting.
+export const SAMPLE_ADDRESS = "0x11d9f0ca1da31bb54752bf0f43b7ba51110752b7";
