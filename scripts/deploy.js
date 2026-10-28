@@ -20,6 +20,20 @@ async function main() {
   await token.waitForDeployment();
   console.log(`MockToken:       ${await token.getAddress()}`);
   console.log(`  tx: ${token.deploymentTransaction().hash}`);
+
+  // Demo only: the drainer sends what it takes to the deployer, our "attacker" wallet.
+  const drainer = await ethers.deployContract("DemoDrainer", [deployer.address]);
+  await drainer.waitForDeployment();
+  console.log(`DemoDrainer:     ${await drainer.getAddress()}`);
+  console.log(`  tx: ${drainer.deploymentTransaction().hash}`);
+
+  console.log("\nPaste into web/src/config.js:");
+  console.log(`export const CONTRACTS = {
+  drainerRegistry: "${await registry.getAddress()}",
+  safeApprove: "${await guard.getAddress()}",
+  demoToken: "${await token.getAddress()}",
+  demoDrainer: "${await drainer.getAddress()}",
+};`);
 }
 
 main().catch((err) => {

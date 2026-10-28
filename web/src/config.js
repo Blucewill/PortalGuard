@@ -7,10 +7,12 @@ export const PORTALDOT = {
 };
 
 // Filled in after deploying the contracts (npm run deploy:portaldot in the project root).
-// While null, the scanner skips the drainer-registry check.
+// While null, the scanner skips the drainer-registry check and the demo page shows a notice.
 export const CONTRACTS = {
   drainerRegistry: null,
   safeApprove: null,
+  demoToken: null,
+  demoDrainer: null,
 };
 
 // A testnet wallet that already has approvals, so the scanner can be tried without connecting.
