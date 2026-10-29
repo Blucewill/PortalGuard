@@ -6,5 +6,13 @@
   "safeApprove": {
     "address": "0x8ddbB4E933cc11E79Ed82799B263aF837Bf0DF0C",
     "tx": "0x6374b8bc51ebaf3b4a1b4495e7d9ddd290242eef27c9fa74c423095b7ef8c2dc"
+  },
+  "demoToken": {
+    "address": "0x69f76CfFE57cE57863bf78C33D0cb4818E73f0a9",
+    "tx": "0xd05b75c6353dba5a64c0dc562273ea8adfc525e8fbfc0569eccfa5b38dedc3c6"
+  },
+  "demoDrainer": {
+    "address": "0x36a97Eceea628796EFFd9893866D0d4451eEC5c7",
+    "tx": "0xc7e0a2b5b37bfd0d290b9544743247a7d4b24483124e788266c84b4ec2b4eafb"
   }
 }

@@ -11,8 +11,8 @@ export const PORTALDOT = {
 export const CONTRACTS = {
   drainerRegistry: "0x96e57f7F7c2B44482BB1a95F6bc53134e2a411a1",
   safeApprove: "0x8ddbB4E933cc11E79Ed82799B263aF837Bf0DF0C",
-  demoToken: null,
-  demoDrainer: null,
+  demoToken: "0x69f76CfFE57cE57863bf78C33D0cb4818E73f0a9",
+  demoDrainer: "0x36a97Eceea628796EFFd9893866D0d4451eEC5c7",
 };
 
 // A testnet wallet that already has approvals, so the scanner can be tried without connecting.
