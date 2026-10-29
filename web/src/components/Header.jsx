@@ -3,9 +3,14 @@ import { shortAddress } from "../lib/chain.js";
 export function Logo() {
   return (
     <a className="logo" href="#top" aria-label="PortalGuard home">
-      <svg viewBox="0 0 32 36" aria-hidden="true">
-        <path d="M16 1 30 6v11c0 9-6 15-14 18C8 32 2 26 2 17V6Z" fill="currentColor" />
-        <rect x="7" y="14" width="18" height="5" rx="2.5" fill="var(--accent)" />
+      <svg viewBox="0 0 400 400" aria-hidden="true">
+        <rect width="400" height="400" rx="72" fill="var(--brand)" />
+        <path fill="#fff" fillRule="evenodd" d="M109 99H239A30 30 0 0 1 269 129V199A40 40 0 0 1 229 239H184V301H109ZM184 145V193H194V145Z" />
+        <g fill="#0d0d0f">
+          <rect x="195" y="248" width="66" height="54" rx="4" />
+          <rect x="269" y="248" width="23" height="19" rx="3" />
+          <rect x="269" y="283" width="23" height="19" rx="3" />
+        </g>
       </svg>
       PortalGuard
     </a>

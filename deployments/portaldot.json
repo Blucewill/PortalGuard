@@ -1,0 +1,10 @@
+{
+  "drainerRegistry": {
+    "address": "0x96e57f7F7c2B44482BB1a95F6bc53134e2a411a1",
+    "tx": "0xa30ffcd93bdce9a68eeeb6bb579646306b2f42f6efc215e6d64b14454cb3d318"
+  },
+  "safeApprove": {
+    "address": "0x8ddbB4E933cc11E79Ed82799B263aF837Bf0DF0C",
+    "tx": "0x6374b8bc51ebaf3b4a1b4495e7d9ddd290242eef27c9fa74c423095b7ef8c2dc"
+  }
+}

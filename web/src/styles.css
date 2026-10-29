@@ -8,7 +8,8 @@
   --line: rgba(13, 13, 15, 0.1);
   --glass: rgba(255, 255, 255, 0.42);
   --glass-line: rgba(255, 255, 255, 0.7);
-  --accent: #ff7a1a;
+  --brand: #ff9700;
+  --accent: #ff9700;
   --accent-deep: #e85d00;
   --danger: #d93a3f;
   --warn: #c77700;
@@ -99,7 +100,7 @@ code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.9
   letter-spacing: -0.02em;
   text-decoration: none;
 }
-.logo svg { width: 22px; height: 25px; }
+.logo svg { width: 28px; height: 28px; }
 .nav { display: flex; gap: 28px; font-size: 14px; }
 .nav a { position: relative; color: var(--ink-2); text-decoration: none; }
 .nav a:hover { color: var(--ink); }
@@ -121,7 +122,7 @@ code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.9
 .net-value { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; }
 
 .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--fade); }
-.dot.live { background: var(--accent); box-shadow: 0 0 0 4px rgba(255, 122, 26, 0.18); }
+.dot.live { background: var(--accent); box-shadow: 0 0 0 4px rgba(255, 151, 0, 0.18); }
 
 /* ---------- Hero ---------- */
 .hero {
@@ -365,7 +366,7 @@ code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.9
 .row-risk { gap: 4px; align-items: flex-start; }
 .chip { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
 .chip-danger { background: var(--danger); color: #fff; }
-.chip-high { background: rgba(255, 122, 26, 0.16); color: var(--accent-deep); }
+.chip-high { background: rgba(255, 151, 0, 0.16); color: var(--accent-deep); }
 .chip-medium { background: rgba(199, 119, 0, 0.12); color: var(--warn); }
 .chip-low { background: rgba(31, 138, 85, 0.12); color: var(--ok); }
 
