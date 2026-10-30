@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getAddress } from "ethers";
 import { Logo } from "../components/Header.jsx";
-import { friendlyError, getSigner, hasWallet, shortAddress } from "../lib/chain.js";
+import { friendlyError, getSigner, hasWallet, shortAddress, walletProvider } from "../lib/chain.js";
 import {
   approveUnlimited, demoReady, isNothingToTake, mintTestTokens, protectWithSafeApprove,
   readDemoState, runDrainer, runDrainerViaSafeApprove,
@@ -49,14 +49,15 @@ export default function Demo() {
       setState(null);
       refresh(next);
     };
-    window.ethereum.on?.("accountsChanged", onAccounts);
-    return () => window.ethereum.removeListener?.("accountsChanged", onAccounts);
+    walletProvider()?.on?.("accountsChanged", onAccounts);
+    return () => walletProvider()?.removeListener?.("accountsChanged", onAccounts);
   }, [refresh]);
 
   async function connect() {
-    setNotice(null);
+    setNotice({ kind: "ok", text: "Waiting for your wallet… approve the MetaMask popup (click the fox icon if you don't see it)." });
     try {
       const who = await (await getSigner()).getAddress();
+      setNotice(null);
       setAccount(who);
       refresh(who);
     } catch (err) {
@@ -72,9 +73,10 @@ export default function Demo() {
       const hash = await fn();
       setNotice({ kind: key.startsWith("drain") ? "error" : "ok", text: `${success} Tx ${shortAddress(hash)}` });
     } catch (err) {
+      const text = friendlyError(err);
       setNotice(isNothingToTake(err)
         ? { kind: "ok", text: "The drainer found nothing to take. You're protected." }
-        : { kind: "error", text: friendlyError(err) });
+        : { kind: text.includes("PortalGuard Shield") ? "ok" : "error", text });
     } finally {
       setBusy(null);
       refresh(account);
@@ -134,7 +136,7 @@ export default function Demo() {
             <button className="link" onClick={connect}>Connect your demo wallet</button> to begin.
           </p>
         )}
-        {notice && <p className={`status status-${notice.kind}`} role="status">{notice.text}</p>}
+        {notice && <p className={`status status-${notice.kind} demo-toast`} role="status">{notice.text}</p>}
 
         <div className="demo-steps">
           <Step n={1} title="Get test tokens">

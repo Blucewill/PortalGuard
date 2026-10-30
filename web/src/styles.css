@@ -430,6 +430,23 @@ code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.9
 }
 .trap-card .sub { font-size: 13px; color: var(--muted); }
 .pill-off { opacity: 0.4; pointer-events: none; }
+/* Demo messages float at the bottom so they stay visible wherever the page is scrolled. */
+.demo-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 50;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 14px 22px;
+  border-radius: 999px;
+  background: var(--ink);
+  font-weight: 500;
+  box-shadow: 0 12px 32px rgba(13, 13, 15, 0.25);
+}
+.demo-toast.status-ok { color: #7fe0a8; }
+.demo-toast.status-error { color: #ff9b9e; }
 
 /* ---------- Footer ---------- */
 .footer {

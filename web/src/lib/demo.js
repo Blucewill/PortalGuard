@@ -78,7 +78,17 @@ export async function protectWithSafeApprove() {
 }
 
 // True when a drain attempt failed because there was nothing to take, i.e. the protection worked.
-export const isNothingToTake = (err) => err?.revert?.name === "NothingToTake";
+// ethers decodes the error when the node returns it directly; through MetaMask it arrives nested and
+// undecoded ("unknown custom error"), so also look for the error's selector anywhere in the payload.
+const NOTHING_TO_TAKE_SELECTOR = "f63c2742"; // NothingToTake()
+export function isNothingToTake(err) {
+  if (err?.revert?.name === "NothingToTake") return true;
+  try {
+    return JSON.stringify(err, (_k, v) => (typeof v === "bigint" ? v.toString() : v)).includes(NOTHING_TO_TAKE_SELECTOR);
+  } catch {
+    return false;
+  }
+}
 
 export const runDrainerViaSafeApprove = (account) =>
   send(CONTRACTS.demoDrainer, DRAINER_ABI, "drainViaSafeApprove",

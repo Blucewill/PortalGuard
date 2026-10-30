@@ -5,7 +5,7 @@ import Hero from "./components/Hero.jsx";
 import Scanner from "./components/Scanner.jsx";
 import HowItWorks from "./components/HowItWorks.jsx";
 import Footer from "./components/Footer.jsx";
-import { friendlyError, getSigner, hasWallet, readProvider } from "./lib/chain.js";
+import { friendlyError, getSigner, hasWallet, readProvider, walletProvider } from "./lib/chain.js";
 
 export default function App() {
   const [account, setAccount] = useState(null);
@@ -29,8 +29,8 @@ export default function App() {
   useEffect(() => {
     if (!hasWallet()) return;
     const onAccounts = (accounts) => setAccount(accounts[0] ? getAddress(accounts[0]) : null);
-    window.ethereum.on?.("accountsChanged", onAccounts);
-    return () => window.ethereum.removeListener?.("accountsChanged", onAccounts);
+    walletProvider()?.on?.("accountsChanged", onAccounts);
+    return () => walletProvider()?.removeListener?.("accountsChanged", onAccounts);
   }, []);
 
   const connect = useCallback(async () => {

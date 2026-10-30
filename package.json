@@ -6,6 +6,7 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
+    "test:extension": "node --test extension/test/detect.test.js",
     "deploy:local": "hardhat run scripts/deploy.js",
     "deploy:portaldot": "hardhat run scripts/deploy.js --network portaldot"
   },
