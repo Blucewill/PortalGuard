@@ -4,7 +4,7 @@
 (function () {
   const { analyzeRequest } = window.PortalGuardDetect;
   const wrapped = new WeakSet();
-  const SCANNER_URL = "http://localhost:4173/#scanner";
+  const SCANNER_URL = "https://blucewill.github.io/PortalGuard/#scanner";
 
   // ---------- talking to the extension (via bridge.js) ----------
   let nextId = 1;
