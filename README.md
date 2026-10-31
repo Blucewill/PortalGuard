@@ -12,6 +12,7 @@ Built for the Portaldot Network V3.0 Hacker House on DoraHacks.
 - **Try it live:** [blucewill.github.io/PortalGuard](https://blucewill.github.io/PortalGuard/) (scanner) and the [live demo](https://blucewill.github.io/PortalGuard/demo.html). You need MetaMask; the site adds the Portaldot testnet for you.
 - **Shield extension:** [download the zip](https://blucewill.github.io/PortalGuard/portalguard-shield.zip). See [Install PortalGuard Shield](#install-portalguard-shield).
 - **Demo video:** [Watch on YouTube](https://www.youtube.com/watch?v=1P9XiHlHS9c)
+- **Pitch deck:** [PortalGuard-pitch-deck.pdf](PortalGuard-pitch-deck.pdf)
 - **Network:** Portaldot V3 testnet. All four contracts are deployed; see [Deployed contracts](#deployed-contracts).
 
 ---
