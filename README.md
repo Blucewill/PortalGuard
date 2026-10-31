@@ -9,6 +9,8 @@ give apps small, time-limited permissions instead of unlimited ones.
 
 Built for the Portaldot Network V3.0 Hacker House on DoraHacks.
 
+- **Try it live:** [blucewill.github.io/PortalGuard](https://blucewill.github.io/PortalGuard/) (scanner) and the [live demo](https://blucewill.github.io/PortalGuard/demo.html). You need MetaMask; the site adds the Portaldot testnet for you.
+- **Shield extension:** [download the zip](https://blucewill.github.io/PortalGuard/portalguard-shield.zip). See [Install PortalGuard Shield](#install-portalguard-shield).
 - **Demo video:** [Watch on YouTube](https://www.youtube.com/watch?v=1P9XiHlHS9c)
 - **Network:** Portaldot V3 testnet. All four contracts are deployed; see [Deployed contracts](#deployed-contracts).
 
@@ -172,13 +174,15 @@ a local test chain, so it can't be used against real funds.
 
 ## Install PortalGuard Shield
 
-Shield isn't in the Chrome Web Store yet. Install it from the code:
+Shield isn't in the Chrome Web Store yet, so you install it by hand:
 
-1. Open `chrome://extensions` (or `edge://extensions`, or `brave://extensions`).
-2. Turn on **Developer mode** (top-right corner).
-3. Click **Load unpacked** and select the `extension` folder in this project.
-4. Click the puzzle-piece icon in the toolbar and pin **PortalGuard Shield**.
-5. Reload any open website tabs so Shield can start protecting them.
+1. [Download portalguard-shield.zip](https://blucewill.github.io/PortalGuard/portalguard-shield.zip) and unzip it.
+   (Or use the `extension` folder of this project.)
+2. Open `chrome://extensions` (or `edge://extensions`, or `brave://extensions`).
+3. Turn on **Developer mode** (top-right corner).
+4. Click **Load unpacked** and select the unzipped folder.
+5. Click the puzzle-piece icon in the toolbar and pin **PortalGuard Shield**.
+6. Reload any open website tabs so Shield can start protecting them.
 
 When a site asks for a risky permission, Shield shows an orange warning with two choices:
 

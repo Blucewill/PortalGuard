@@ -25,7 +25,7 @@ export default function Header({ account, block, onConnect }) {
         <a href="#top" className="active">Home</a>
         <a href="#scanner">Scanner</a>
         <a href="#how">How it works</a>
-        <a href="/demo.html">Live demo</a>
+        <a href="./demo.html">Live demo</a>
       </nav>
       <div className="header-right">
         <div className="net-badge" title="Portaldot Testnet V3 · Chain ID 420420777">

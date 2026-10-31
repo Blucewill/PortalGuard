@@ -4,6 +4,8 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  // Relative paths, so the built site works both at the root and at github.io/PortalGuard/.
+  base: "./",
   build: {
     // Two pages: the PortalGuard app and the testnet drainer demo.
     rollupOptions: {

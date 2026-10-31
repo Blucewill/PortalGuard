@@ -97,9 +97,9 @@ export default function Demo() {
       <header className="header">
         <Logo />
         <nav className="nav" aria-label="Main">
-          <a href="/">Home</a>
-          <a href="/#scanner">Scanner</a>
-          <a href="/demo.html" className="active">Live demo</a>
+          <a href="./">Home</a>
+          <a href="./#scanner">Scanner</a>
+          <a href="./demo.html" className="active">Live demo</a>
         </nav>
         <div className="header-right">
           <button className="pill pill-ghost" onClick={connect}>
@@ -172,7 +172,7 @@ export default function Demo() {
             </p>
             <a
               className={`pill pill-soft ${account ? "" : "pill-off"}`}
-              href={account ? `/?address=${account}#scanner` : undefined}
+              href={account ? `./?address=${account}#scanner` : undefined}
               target="_blank"
               rel="noreferrer"
             >
