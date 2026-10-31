@@ -13,6 +13,7 @@ Built for the Portaldot Network V3.0 Hacker House on DoraHacks.
 - **Shield extension:** [download the zip](https://blucewill.github.io/PortalGuard/portalguard-shield.zip). See [Install PortalGuard Shield](#install-portalguard-shield).
 - **Demo video:** [Watch on YouTube](https://www.youtube.com/watch?v=1P9XiHlHS9c)
 - **Pitch deck:** [PortalGuard-pitch-deck.pdf](PortalGuard-pitch-deck.pdf)
+- **Whitepaper:** [read it online](https://blucewill.github.io/PortalGuard/whitepaper.html), with search and read-aloud
 - **Network:** Portaldot V3 testnet. All four contracts are deployed; see [Deployed contracts](#deployed-contracts).
 
 ---

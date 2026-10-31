@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="./logo.svg" type="image/svg+xml">
+<title>PortalGuard Whitepaper</title>
+<meta name="description" content="PortalGuard whitepaper: capped, expiring and visible token permissions for the Portaldot network.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky toolbar (search + listen), contents rail on the left, one reading column, player bar docked at the bottom while reading aloud. */
+:root {
+  --bg: #f5f5f3;
+  --surface: #ffffff;
+  --ink: #17171a;
+  --muted: #5c5c66;
+  --line: #e2e1dd;
+  --accent: #ff9700;
+  --accent-ink: #9e5400;
+  --hit: rgba(255, 151, 0, 0.30);
+  --sentence: rgba(255, 151, 0, 0.14);
+  --word: #ff9700;
+  --word-ink: #17171a;
+  --code-bg: #efeeea;
+  --font-display: "Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+  --header-h: 64px;
+  --player-h: 0px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111113; --surface: #1a1a1d; --ink: #ececee; --muted: #a3a3ac; --line: #2d2d32;
+    --accent-ink: #ffb340; --hit: rgba(255, 151, 0, 0.34); --sentence: rgba(255, 151, 0, 0.16);
+    --code-bg: #222226; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111113; --surface: #1a1a1d; --ink: #ececee; --muted: #a3a3ac; --line: #2d2d32;
+  --accent-ink: #ffb340; --hit: rgba(255, 151, 0, 0.34); --sentence: rgba(255, 151, 0, 0.16);
+  --code-bg: #222226; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; }
+html { scroll-padding-top: calc(var(--header-h) + 24px); }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.65;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 30; background: var(--surface);
+}
+a { color: var(--accent-ink); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+/* ---------- Toolbar ---------- */
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: var(--surface); border-bottom: 1px solid var(--line);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.bar-inner {
+  max-width: 1240px; margin: 0 auto; min-height: var(--header-h);
+  display: flex; align-items: center; gap: 16px; padding-block: 10px; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 17px; text-decoration: none; color: var(--ink); white-space: nowrap; }
+.brand svg { width: 28px; height: 28px; flex: none; }
+.brand small { font-weight: 500; color: var(--muted); }
+.progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 0; background: var(--accent); }
+
+.search { position: relative; flex: 1 1 260px; max-width: 520px; margin-left: auto; }
+.search-field {
+  display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 10px 0 12px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+}
+.search-field:focus-within { border-color: var(--accent); }
+.search-field svg { width: 18px; height: 18px; color: var(--muted); flex: none; }
+.search-field input {
+  flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink);
+  font: 500 15px var(--font-display); outline: none;
+}
+.search-field input::placeholder { color: var(--muted); }
+.kbd { font: 500 12px var(--font-mono); color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
+.search-count { font: 500 13px var(--font-display); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.icon-btn {
+  display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 7px;
+  border: 0; background: transparent; color: var(--ink); cursor: pointer;
+}
+.icon-btn:hover { background: var(--code-bg); }
+.icon-btn:disabled { opacity: 0.35; cursor: default; background: transparent; }
+.icon-btn svg { width: 16px; height: 16px; }
+.results {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; max-height: min(60vh, 440px); overflow: auto;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16); padding: 6px;
+}
+.results button {
+  display: block; width: 100%; text-align: left; border: 0; background: transparent; color: var(--ink);
+  padding: 10px 12px; border-radius: 8px; cursor: pointer; font: 15px/1.45 var(--font-body);
+}
+.results button:hover, .results button[aria-selected="true"] { background: var(--sentence); }
+.results .where { display: block; font: 600 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 2px; }
+.results mark { background: var(--hit); color: inherit; border-radius: 2px; }
+.results .empty { padding: 12px; color: var(--muted); font: 15px var(--font-display); }
+
+.listen-btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px;
+  border-radius: 10px; border: 0; background: var(--ink); color: var(--bg);
+  font: 600 15px var(--font-display); cursor: pointer; white-space: nowrap;
+}
+.listen-btn svg { width: 16px; height: 16px; }
+.listen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---------- Page ---------- */
+.page {
+  max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px calc(80px + var(--player-h));
+}
+.toc { position: sticky; top: calc(var(--header-h) + 28px + env(safe-area-inset-top, 0px)); align-self: start; max-height: calc(100vh - var(--header-h) - 60px); overflow: auto; font-family: var(--font-display); }
+.toc summary { display: none; }
+.toc-title { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.toc a {
+  display: grid; grid-template-columns: 26px 1fr; gap: 4px; padding: 6px 10px; border-radius: 8px;
+  color: var(--muted); text-decoration: none; font-size: 14.5px; line-height: 1.35;
+}
+.toc a span:first-child { font-variant-numeric: tabular-nums; }
+.toc a:hover { color: var(--ink); background: var(--code-bg); }
+.toc a.active { color: var(--ink); background: var(--sentence); font-weight: 600; }
+
+article { max-width: 70ch; min-width: 0; }
+.cover { padding-bottom: 32px; border-bottom: 1px solid var(--line); margin-bottom: 40px; }
+.doc-type { font: 600 13px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-ink); margin: 0 0 14px; }
+h1 { font-family: var(--font-display); font-size: clamp(36px, 6vw, 56px); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 16px; text-wrap: balance; }
+.subtitle { font-size: 21px; color: var(--muted); margin: 0 0 28px; text-wrap: balance; }
+.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px 24px; margin: 0; font-family: var(--font-display); }
+.meta div { min-width: 0; }
+.meta dt { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.meta dd { margin: 2px 0 0; font-size: 15px; font-weight: 600; }
+
+section { padding-block: 8px 24px; }
+h2 { font-family: var(--font-display); font-size: 30px; line-height: 1.2; letter-spacing: -0.01em; margin: 32px 0 12px; text-wrap: balance; }
+h3 { font-family: var(--font-display); font-size: 21px; line-height: 1.3; margin: 30px 0 8px; text-wrap: balance; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.sec-head h2 { margin-bottom: 4px; }
+.num { color: var(--accent-ink); font-variant-numeric: tabular-nums; margin-right: 10px; }
+.sec-listen {
+  display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: transparent; color: var(--muted);
+  font: 500 13px var(--font-display); padding: 5px 10px; border-radius: 999px; cursor: pointer;
+}
+.sec-listen:hover { color: var(--ink); border-color: var(--muted); }
+.sec-listen svg { width: 12px; height: 12px; }
+p, li, dd { margin: 0 0 16px; }
+ul, ol.steps { padding-left: 24px; margin: 0 0 20px; }
+li { margin-bottom: 8px; }
+strong { font-weight: 600; }
+.abstract { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px 28px; }
+.abstract h2 { margin-top: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.abstract p:last-child { margin-bottom: 0; }
+.callout { border-left: 3px solid var(--accent); padding: 4px 0 4px 20px; margin: 24px 0; font-style: italic; color: var(--muted); }
+
+code, .mono { font-family: var(--font-mono); font-size: 0.82em; }
+:not(pre) > code { background: var(--code-bg); padding: 2px 6px; border-radius: 5px; overflow-wrap: anywhere; }
+pre {
+  background: var(--code-bg); border-radius: 12px; padding: 18px 20px; overflow-x: auto; margin: 0 0 22px;
+  font: 14px/1.6 var(--font-mono); color: var(--ink);
+}
+pre .c { color: var(--muted); }
+.table-wrap { overflow-x: auto; margin: 0 0 24px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-family: var(--font-display); font-size: 15px; line-height: 1.45; }
+caption { caption-side: top; text-align: left; padding: 14px 16px 6px; font: 600 13px var(--font-display); color: var(--muted); letter-spacing: 0.04em; }
+th, td { text-align: left; padding: 10px 16px; border-top: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; background: var(--bg); }
+td .mono { font-size: 13px; overflow-wrap: anywhere; }
+.risk { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+.r-danger { background: #c62828; color: #fff; }
+.r-high { background: var(--accent); color: #17171a; }
+.r-medium { background: var(--sentence); color: var(--accent-ink); }
+.r-low { background: var(--code-bg); color: var(--muted); }
+
+/* System diagram */
+figure { margin: 8px 0 28px; }
+.flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 22px; font-family: var(--font-display); }
+.node { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-width: 0; }
+.node b { display: block; font-size: 14px; }
+.node span { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.35; margin-top: 2px; }
+.node.pg { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.flow .node:not(:last-child)::after {
+  content: "→"; position: absolute; right: -18px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px;
+}
+.registry { margin-top: 18px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-family: var(--font-display); }
+.registry .node { flex: 1 1 260px; border-style: dashed; }
+.registry p { flex: 1 1 260px; margin: 0; font-size: 14px; color: var(--muted); }
+figcaption { font: 14px/1.5 var(--font-display); color: var(--muted); margin-top: 14px; }
+
+.glossary dt { font-family: var(--font-display); font-weight: 600; }
+.glossary dd { margin-left: 0; color: var(--muted); }
+.refs { padding-left: 24px; font-size: 16px; }
+.refs li { margin-bottom: 10px; }
+.foot { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--line); font: 14px var(--font-display); color: var(--muted); }
+
+/* Read-aloud state */
+.reading { position: relative; }
+.reading::before {
+  content: ""; position: absolute; left: -18px; top: 4px; bottom: 4px; width: 3px; border-radius: 2px; background: var(--accent);
+}
+.reading-fallback { background: var(--sentence); border-radius: 4px; }
+::highlight(search-hit) { background-color: var(--hit); }
+::highlight(search-current) { background-color: var(--accent); color: #17171a; }
+::highlight(tts-sentence) { background-color: var(--sentence); }
+::highlight(tts-word) { background-color: var(--word); color: var(--word-ink); }
+.flash { animation: flash 1.4s ease-out; }
+@keyframes flash { from { background: var(--hit); } to { background: transparent; } }
+
+/* ---------- Player ---------- */
+.player {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--surface); border-top: 1px solid var(--line);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.08);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  font-family: var(--font-display);
+}
+.player-inner { max-width: 1240px; margin: 0 auto; display: flex; align-items: center; gap: 14px 20px; padding-block: 12px; flex-wrap: wrap; }
+.transport { display: flex; align-items: center; gap: 6px; }
+.transport .icon-btn { width: 38px; height: 38px; }
+.transport .icon-btn svg { width: 18px; height: 18px; }
+.transport .play { background: var(--accent); color: #17171a; border-radius: 50%; width: 44px; height: 44px; }
+.transport .play:hover { background: var(--accent); filter: brightness(1.05); }
+.now { flex: 1 1 220px; min-width: 0; }
+.now small { display: block; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.now b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track { height: 4px; background: var(--line); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.track i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.3s; }
+.settings { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 14px; }
+.settings label { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.settings select {
+  font: 500 14px var(--font-display); color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 8px; max-width: 220px;
+}
+.toggle { cursor: pointer; }
+.toggle input { accent-color: var(--accent); width: 16px; height: 16px; }
+.notice { font: 14px var(--font-display); color: var(--muted); }
+
+/* ---------- Narrow screens ---------- */
+@media (max-width: 960px) {
+  .page { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 20px; }
+  .toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 4px 8px; }
+  .toc summary { display: block; cursor: pointer; padding: 10px 6px; font-weight: 600; font-size: 15px; }
+  .toc-title { display: none; }
+  .toc ol { padding-bottom: 8px; }
+  .reading::before { left: -10px; }
+  .flow { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .flow .node:not(:last-child)::after { content: "↓"; right: auto; left: 50%; top: auto; bottom: -24px; transform: translateX(-50%); }
+}
+@media (max-width: 560px) {
+  body { font-size: 17px; }
+  .brand small { display: none; }
+  .search { order: 3; flex-basis: 100%; max-width: none; }
+  .listen-btn { margin-left: auto; }
+  .kbd { display: none; }
+  .abstract { padding: 20px; }
+  .settings select { max-width: 150px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flash { animation: none; }
+  .track i { transition: none; }
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-inner">
+    <a class="brand" href="#top" aria-label="PortalGuard Whitepaper, back to top">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#ff9700"/><path d="M19 14h18a12 12 0 0 1 0 24h-8v12H19z" fill="#fff"/><rect x="29" y="22" width="8" height="8" fill="#ff9700"/><rect x="34" y="42" width="10" height="8" fill="#141416"/><rect x="47" y="42" width="4" height="3" fill="#141416"/><rect x="47" y="47" width="4" height="3" fill="#141416"/></svg>
+      <span>PortalGuard <small>Whitepaper</small></span>
+    </a>
+    <div class="search" role="search">
+      <div class="search-field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search the whitepaper" autocomplete="off" aria-label="Search the whitepaper" aria-controls="results" aria-expanded="false">
+        <span class="search-count" id="count" aria-live="polite"></span>
+        <button class="icon-btn" id="prevHit" type="button" aria-label="Previous result" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 15 6-6 6 6"/></svg></button>
+        <button class="icon-btn" id="nextHit" type="button" aria-label="Next result" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></button>
+        <span class="kbd" id="kbd">/</span>
+      </div>
+      <div class="results" id="results" role="listbox" aria-label="Search results" hidden></div>
+    </div>
+    <button class="listen-btn" id="listen" type="button">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      <span>Listen</span>
+    </button>
+  </div>
+  <div class="progress" id="progress"></div>
+</header>
+
+<div class="page" id="top">
+  <nav class="toc" aria-label="Contents">
+    <details id="tocDetails" open>
+      <summary>Contents</summary>
+      <p class="toc-title">Contents</p>
+      <ol id="tocList"></ol>
+    </details>
+  </nav>
+
+  <article id="doc">
+    <header class="cover">
+      <p class="doc-type">Whitepaper · Version 1.0</p>
+      <h1>PortalGuard</h1>
+      <p class="subtitle">Capped, expiring and visible token permissions for the Portaldot network.</p>
+      <dl class="meta no-read">
+        <div><dt>Published</dt><dd>31 October 2026</dd></div>
+        <div><dt>Author</dt><dd>Blucewill</dd></div>
+        <div><dt>Network</dt><dd>Portaldot V3 testnet</dd></div>
+        <div><dt>Status</dt><dd>Deployed, unaudited</dd></div>
+      </dl>
+    </header>
+
+    <section class="abstract" id="abstract" data-title="Abstract">
+      <h2>Abstract</h2>
+      <p>Wallet drainers took about 494 million dollars from more than 332,000 wallets in 2024. Most of those losses did not come from broken cryptography. They came from permissions: a victim approved a contract to spend their tokens, and the attacker used that approval to empty the wallet.</p>
+      <p>PortalGuard is a set of four tools that protect Portaldot users at each stage of that attack. PortalGuard Shield, a browser extension, warns users before they sign a risky permission. SafeApprove, a smart contract, replaces unlimited approvals with grants that have a spending cap and an expiry time. The approval scanner shows every permission a wallet has given and revokes any of them in one click. The DrainerRegistry is a shared, on-chain list of known drainer addresses that the other three tools consult.</p>
+      <p>This paper describes the problem, the design of each component, the deployment on Portaldot V3 testnet, the results of testing, and the known limitations.</p>
+    </section>
+
+    <section id="introduction" data-title="Introduction">
+      <div class="sec-head"><h2><span class="num">1</span>Introduction</h2></div>
+      <p>Token permissions are one of the basic building blocks of on-chain applications. A decentralised exchange, a marketplace or a lending app cannot move a user's tokens unless the user first gives it permission. That permission, called an approval or an allowance, is recorded on the token contract and stays in force until the user removes it.</p>
+      <p>The model is powerful, but it was designed for developers, not for the people who sign the requests. Wallets display approvals as technical prompts. Applications routinely ask for unlimited amounts so that users never have to approve twice. Approvals have no expiry date. And once granted, they are invisible unless the user knows how to search the blockchain for them.</p>
+      <p>Wallet drainers exploit every one of those gaps. PortalGuard closes them for Portaldot, a new network that can build safety in from the start instead of adding it after the first wave of losses.</p>
+      <p>This paper is written for three audiences: users who want to understand how PortalGuard protects them, developers who may integrate SafeApprove into their applications, and reviewers assessing the design. Sections 2 and 3 explain the problem. Sections 4 to 9 describe the design. Sections 10 to 12 cover deployment, evaluation and limitations.</p>
+    </section>
+
+    <section id="background" data-title="How token permissions work">
+      <div class="sec-head"><h2><span class="num">2</span>How token permissions work</h2></div>
+      <p>Three permission types account for almost all approval-based theft. Each one lets a third party move assets out of a wallet without asking the owner again.</p>
+      <h3>2.1 Token allowances</h3>
+      <p>Fungible tokens on EVM networks follow the ERC-20 standard. A holder calls <code>approve(spender, amount)</code> on the token contract to let a spender move up to that amount. The spender then calls <code>transferFrom(owner, recipient, amount)</code> whenever it wants, with no further signature from the owner.</p>
+      <p>To save users from approving again later, many applications request the largest possible number, 2 to the power of 256 minus 1. In practice this is an unlimited allowance. It covers every token the user holds today and every token they receive in the future.</p>
+      <h3>2.2 NFT operator approvals</h3>
+      <p>NFT standards provide <code>setApprovalForAll(operator, true)</code>. One call gives the operator control of every NFT the owner holds in that collection, including items acquired later.</p>
+      <h3>2.3 Permit signatures</h3>
+      <p>Permit messages, defined in EIP-2612 and extended by Permit2, grant an allowance through an off-chain signature instead of a transaction. The user pays no gas and sees no transaction, only a request to sign a message. Many users read this as a harmless login. Anyone holding the signature can submit it on-chain and receive the allowance.</p>
+      <h3>2.4 Why users cannot see the risk</h3>
+      <p>Wallet confirmation screens show contract addresses, hexadecimal data and a "spending cap" field. They do not explain that the user is handing over control of their balance, they do not show how long the permission lasts, and once the user confirms, the permission disappears from view. Users cannot protect themselves from something they cannot see or understand.</p>
+    </section>
+
+    <section id="problem" data-title="The problem: approval drainers">
+      <div class="sec-head"><h2><span class="num">3</span>The problem: approval drainers</h2></div>
+      <h3>3.1 Anatomy of an attack</h3>
+      <p>An approval drainer follows the same sequence in almost every case:</p>
+      <ol class="steps">
+        <li>The attacker builds a convincing website: a fake airdrop, a free mint, a reward claim or a copy of a real application.</li>
+        <li>The victim clicks a button such as "Claim". Behind it, the site requests an unlimited approval, an operator approval or a Permit signature for a contract the attacker controls.</li>
+        <li>The wallet shows a technical prompt. The victim confirms.</li>
+        <li>The attacker calls <code>transferFrom</code> and moves the tokens out, either immediately or weeks later when the balance is larger.</li>
+      </ol>
+      <p>The victim never sends a transaction to the attacker. This is why the typical complaint is: "I only clicked claim. I never sent anything. How is my wallet empty?"</p>
+      <h3>3.2 Scale</h3>
+      <p>Industry reports and news coverage show that this is not a rare edge case.</p>
+      <ul>
+        <li>In 2024, wallet drainers stole <strong>494 million dollars from 332,000 wallets</strong>, an increase of 67 percent over 2023. More than half of the large losses, 56.7 percent, came from a single signed Permit approval. (Scam Sniffer)</li>
+        <li>In August 2024, one holder lost <strong>55 million dollars in DAI</strong> after signing one phishing transaction. (The Block)</li>
+        <li>Between May 2021 and December 2023, approval phishing alone accounted for about <strong>1 billion dollars</strong> in losses. (Chainalysis)</li>
+        <li>In 2025, a quieter year, phishing still cost <strong>106,000 victims 83.85 million dollars</strong>. (Scam Sniffer)</li>
+        <li>In October 2026, US prosecutors charged six people over fake NFT websites that used wallet permissions to drain <strong>about 517,000 dollars from 74 wallets</strong>. In one case, a victim's 9,067 USDT was gone about 33 minutes after it was deposited. (Yahoo News, The Defiant)</li>
+      </ul>
+      <h3>3.3 Why losses are permanent</h3>
+      <p>Blockchain transfers are final. There is no bank to call, no chargeback and no central party that can reverse a transaction. Revoking an approval after the theft stops further losses, but it does not return what was already taken. Prevention is the only effective defence.</p>
+      <p class="callout">On average, each wallet in the 2024 figures lost about 1,490 dollars. For a first-time user, one loss is often enough to leave a network for good.</p>
+    </section>
+
+    <section id="goals" data-title="Design goals">
+      <div class="sec-head"><h2><span class="num">4</span>Design goals</h2></div>
+      <p>PortalGuard was designed against six goals. Each component in the following sections serves at least one of them.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Table 1. Design goals</caption>
+          <thead><tr><th>Goal</th><th>What it means</th><th>Served by</th></tr></thead>
+          <tbody>
+            <tr><td>Warn before signing</td><td>Explain a risky request before the wallet opens, while the user can still say no.</td><td>Shield</td></tr>
+            <tr><td>Limit the damage</td><td>Even a fooled user loses at most a small, known amount, and only for a short time.</td><td>SafeApprove</td></tr>
+            <tr><td>Make permissions visible</td><td>Show every active permission with its risk, in plain language.</td><td>Scanner</td></tr>
+            <tr><td>Make permissions reversible</td><td>Cancel one permission, many, or all of them quickly.</td><td>Scanner, SafeApprove</td></tr>
+            <tr><td>Share what is known</td><td>A drainer identified once is blocked everywhere.</td><td>DrainerRegistry</td></tr>
+            <tr><td>Never take custody</td><td>PortalGuard never holds user funds. Tokens move directly from owner to recipient.</td><td>All components</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="overview" data-title="System overview">
+      <div class="sec-head"><h2><span class="num">5</span>System overview</h2></div>
+      <p>PortalGuard protects a user at three moments: before a permission is given, instead of an unlimited permission, and after a permission exists. Figure 1 shows how the components fit around the user's wallet.</p>
+      <figure>
+        <div class="flow no-read no-search" aria-hidden="true">
+          <div class="node"><b>Website</b><span>Requests a permission</span></div>
+          <div class="node pg"><b>Shield</b><span>Pauses and explains the request</span></div>
+          <div class="node"><b>User's wallet</b><span>User confirms or cancels</span></div>
+          <div class="node pg"><b>SafeApprove</b><span>Enforces cap and expiry</span></div>
+          <div class="node"><b>Token contract</b><span>Moves tokens owner to recipient</span></div>
+        </div>
+        <div class="registry no-read no-search" aria-hidden="true">
+          <div class="node pg"><b>DrainerRegistry</b><span>Shared on-chain list of flagged addresses</span></div>
+          <p>Checked by Shield before signing, by SafeApprove at grant and spend time, and by the scanner when rating risk.</p>
+        </div>
+        <figcaption>Figure 1. A permission request passes through Shield before it reaches the wallet. Apps that adopt SafeApprove collect tokens through it, so its cap and expiry always apply. All three tools consult the DrainerRegistry. The scanner works on the token contracts directly and finds approvals made with or without PortalGuard.</figcaption>
+      </figure>
+      <div class="table-wrap">
+        <table>
+          <caption>Table 2. Components</caption>
+          <thead><tr><th>Moment</th><th>Component</th><th>Type</th></tr></thead>
+          <tbody>
+            <tr><td>Before signing</td><td>PortalGuard Shield</td><td>Browser extension (Chrome, Edge, Brave)</td></tr>
+            <tr><td>Instead of unlimited</td><td>SafeApprove</td><td>Smart contract</td></tr>
+            <tr><td>After signing</td><td>Approval scanner</td><td>Web application</td></tr>
+            <tr><td>Throughout</td><td>DrainerRegistry</td><td>Smart contract</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="safeapprove" data-title="SafeApprove">
+      <div class="sec-head"><h2><span class="num">6</span>SafeApprove</h2></div>
+      <p>SafeApprove is the key component of PortalGuard. A warning can be ignored, and a revoke only helps if the user notices in time. A cap protects the user even when they have already been fooled.</p>
+      <h3>6.1 The grant model</h3>
+      <p>The user approves the SafeApprove contract once for a token. After that, instead of approving applications directly, the user gives each application a grant. A grant has three properties: the maximum amount the application may still collect, the time at which the grant expires, and the lockdown epoch in which it was created. Grants are stored per owner, per token and per spender.</p>
+      <pre class="no-read"><span class="c">// SafeApprove.sol</span>
+struct Grant {
+    uint256 amount;    <span class="c">// tokens the spender may still pull</span>
+    uint64  expiresAt; <span class="c">// unix timestamp after which the grant is dead</span>
+    uint64  epoch;     <span class="c">// owner's epoch when granted; lockdown() bumps it</span>
+}
+
+<span class="c">// owner => token => spender => grant</span>
+mapping(address => mapping(address => mapping(address => Grant))) public grants;</pre>
+      <h3>6.2 Collecting tokens</h3>
+      <p>An application collects tokens by calling <code>spend(owner, token, to, amount)</code>. The contract runs four checks, in this order, and stops at the first failure:</p>
+      <ol class="steps">
+        <li>The grant exists and was created in the owner's current epoch. Otherwise the call fails with <code>GrantRevoked</code>.</li>
+        <li>The grant has not expired. Otherwise it fails with <code>GrantExpired</code>.</li>
+        <li>The caller is not flagged in the DrainerRegistry. Otherwise it fails with <code>SpenderFlagged</code>.</li>
+        <li>The requested amount fits within what is left of the cap. Otherwise it fails with <code>ExceedsAllowance</code>.</li>
+      </ol>
+      <p>If all checks pass, the contract reduces the remaining amount first and only then transfers the tokens, following the checks-effects-interactions pattern. The tokens move directly from the owner to the recipient. SafeApprove never holds them.</p>
+      <h3>6.3 Revoking and lockdown</h3>
+      <p>A user can cancel one grant with <code>revoke</code> or several at once with <code>revokeMany</code>. For emergencies, <code>lockdown</code> increases the user's epoch number by one. Every grant created in an earlier epoch becomes invalid immediately. Because the contract compares epochs instead of deleting grants one by one, lockdown costs the same small amount of gas whether the user has two grants or two thousand.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Table 3. SafeApprove interface</caption>
+          <thead><tr><th>Function</th><th>Caller</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td><code>grant(token, spender, amount, expiresAt)</code></td><td>Owner</td><td>Creates or replaces a grant. Fails if the expiry is in the past or the spender is flagged.</td></tr>
+            <tr><td><code>available(owner, token, spender)</code></td><td>Anyone</td><td>Returns the amount a spender can collect now, or 0 if the grant is expired, revoked or flagged.</td></tr>
+            <tr><td><code>spend(owner, token, to, amount)</code></td><td>Application</td><td>Collects tokens within the grant.</td></tr>
+            <tr><td><code>revoke(token, spender)</code></td><td>Owner</td><td>Cancels one grant.</td></tr>
+            <tr><td><code>revokeMany(keys)</code></td><td>Owner</td><td>Cancels several grants in one transaction.</td></tr>
+            <tr><td><code>lockdown()</code></td><td>Owner</td><td>Cancels every grant the owner has made.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>6.4 Security properties</h3>
+      <ul>
+        <li><strong>Bounded loss.</strong> A malicious application can take at most the remaining amount of its grant, and only before the expiry time.</li>
+        <li><strong>Flagged spenders are blocked twice.</strong> The registry is checked when the grant is created and again on every spend, so a spender flagged after receiving a grant is stopped too.</li>
+        <li><strong>No custody.</strong> Funds stay in the owner's wallet until the moment of a valid transfer.</li>
+        <li><strong>One trusted contract instead of many.</strong> The user gives a single unlimited approval, to SafeApprove, instead of one to every application. The trust is concentrated in a small contract whose code is public and can be audited.</li>
+      </ul>
+    </section>
+
+    <section id="registry" data-title="DrainerRegistry">
+      <div class="sec-head"><h2><span class="num">7</span>DrainerRegistry</h2></div>
+      <p>The DrainerRegistry is a public list of addresses known to drain wallets. When one user is attacked, every other user should be protected from the same address. The registry makes that knowledge available on-chain, where any wallet or application can read it.</p>
+      <p>Anyone can report a suspicious address with <code>report(suspect, reason)</code>. Each reporter can report a given address only once, and the contract keeps a count of reports. A report on its own does not block anything. The registry owner reviews reports and confirms an address with <code>flag(suspect, reason)</code>. A flag added by mistake is removed with <code>unflag(suspect)</code>. Every action emits an event, so the history of the list is public.</p>
+      <p>SafeApprove reads the registry when grants are created and spent, the scanner reads it when rating approvals, and Shield reads it before the wallet opens. In the current version the registry has a single owner. Section 13 describes the move to several reviewers.</p>
+    </section>
+
+    <section id="scanner" data-title="Approval scanner">
+      <div class="sec-head"><h2><span class="num">8</span>Approval scanner</h2></div>
+      <p>The scanner answers one question: who can spend my tokens right now? It works for any address, with or without a connected wallet, and finds every approval, including ones made long before PortalGuard existed.</p>
+      <h3>8.1 Finding approvals</h3>
+      <p>The scanner requests every <code>Approval</code> and <code>ApprovalForAll</code> event in which the address is the owner, using the standard <code>eth_getLogs</code> call. Some RPC providers limit how many blocks one query may cover. When a query is refused, the scanner splits the block range in half and retries each half, down to ranges of about 1,000 blocks.</p>
+      <h3>8.2 Checking what is still active</h3>
+      <p>An event shows that an approval was given, not that it still exists. It may already have been used up or revoked. For each spender found, the scanner reads the current state from the token contract with <code>allowance</code>, <code>getApproved</code> or <code>isApprovedForAll</code>, and keeps only the approvals that are still active.</p>
+      <h3>8.3 Rating risk</h3>
+      <p>Each active approval receives one of four ratings. The list is sorted by risk, then by how recently the approval was given.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Table 4. Risk rules</caption>
+          <thead><tr><th>Rating</th><th>Rule</th><th>Message shown</th></tr></thead>
+          <tbody>
+            <tr><td><span class="risk r-danger">Danger</span></td><td>Spender is flagged in the DrainerRegistry</td><td>Reported drainer. Revoke now.</td></tr>
+            <tr><td><span class="risk r-high">High</span></td><td>Operator approval for a whole NFT collection</td><td>Can move every NFT in this collection.</td></tr>
+            <tr><td><span class="risk r-high">High</span></td><td>Allowance of at least half the maximum value</td><td>Unlimited amount, never expires.</td></tr>
+            <tr><td><span class="risk r-medium">Medium</span></td><td>Spender is a personal wallet, not a contract</td><td>Spender is a personal wallet, not an app.</td></tr>
+            <tr><td><span class="risk r-low">Low</span></td><td>Limited amount to a contract</td><td>Limited amount to a contract.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>8.4 Revoking</h3>
+      <p>Each approval has a Revoke button. It asks the user's wallet to sign <code>approve(spender, 0)</code> for tokens or <code>setApprovalForAll(operator, false)</code> for NFT collections. A scan can be shared as a link by adding the address to the page URL, so a user can ask a friend to check their wallet.</p>
+    </section>
+
+    <section id="shield" data-title="PortalGuard Shield">
+      <div class="sec-head"><h2><span class="num">9</span>PortalGuard Shield</h2></div>
+      <p>Most victims cannot read a wallet confirmation screen, so the warning must arrive before that screen appears and must be written for a non-technical reader. Shield is a browser extension that does exactly that.</p>
+      <h3>9.1 Architecture</h3>
+      <p>Websites talk to a wallet through the wallet's <code>request</code> function, defined in EIP-1193. Shield is a Manifest V3 extension with three parts:</p>
+      <ul>
+        <li>A content script runs inside each page, next to the website's own code, as soon as the page starts loading. It wraps the <code>request</code> function of every wallet it finds, both the classic <code>window.ethereum</code> object and wallets that announce themselves through EIP-6963.</li>
+        <li>A bridge script relays messages between the page and the extension, because the page cannot talk to the extension directly.</li>
+        <li>A background service worker looks up spenders in the DrainerRegistry and keeps count of warnings shown and requests cancelled.</li>
+      </ul>
+      <h3>9.2 What Shield detects</h3>
+      <div class="table-wrap">
+        <table>
+          <caption>Table 5. Detection rules</caption>
+          <thead><tr><th>Request</th><th>Condition</th><th>Shield response</th></tr></thead>
+          <tbody>
+            <tr><td><code>approve</code> or <code>increaseAllowance</code></td><td>Amount of at least 2 to the power of 128</td><td>High-risk warning: unlimited access</td></tr>
+            <tr><td><code>approve</code> or <code>increaseAllowance</code></td><td>Any smaller, non-zero amount</td><td>Caution: check that you trust this site</td></tr>
+            <tr><td><code>setApprovalForAll</code></td><td>Turning approval on</td><td>High-risk warning: access to all NFTs</td></tr>
+            <tr><td><code>eth_signTypedData_v3</code> or <code>v4</code></td><td>Message type contains "Permit"</td><td>High-risk warning: this is not a login</td></tr>
+            <tr><td>Any of the above</td><td>Spender flagged in the DrainerRegistry</td><td>Red warning: known wallet drainer</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Two kinds of request pass straight through, because they make the user safer: revokes, which set an amount to zero or turn an approval off, and grants to SafeApprove on Portaldot.</p>
+      <h3>9.3 The user's choice</h3>
+      <p>When Shield pauses a request, it explains in plain words what the site is asking for, who would receive the permission and what could happen. The user then chooses. Cancel, the recommended option, stops the request and returns the standard "user rejected" error, code 4001, so the website behaves as if the user had declined in the wallet. The wallet never opens. "I trust this site, continue to my wallet" passes the request to the wallet unchanged.</p>
+    </section>
+
+    <section id="deployment" data-title="Deployment">
+      <div class="sec-head"><h2><span class="num">10</span>Deployment</h2></div>
+      <p>All four contracts are deployed on Portaldot V3 testnet. They are written in Solidity 0.8.28, compiled with the Paris EVM target for compatibility, and use OpenZeppelin libraries. The MockToken and DemoDrainer contracts exist only for the live demo. DemoDrainer refuses to deploy on any network other than Portaldot testnet or a local test chain.</p>
+      <div class="table-wrap no-read">
+        <table>
+          <caption>Table 6. Network</caption>
+          <tbody>
+            <tr><th>Network</th><td>Portaldot V3 testnet</td></tr>
+            <tr><th>Chain ID</th><td><span class="mono">420420777</span></td></tr>
+            <tr><th>EVM RPC</th><td><span class="mono">https://test-evm-rpc-v3.portaldot.dev</span></td></tr>
+            <tr><th>Explorer</th><td><a href="https://scanner-testnet-v3.portaldot.dev/#/" target="_blank" rel="noopener">scanner-testnet-v3.portaldot.dev</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-wrap no-read">
+        <table>
+          <caption>Table 7. Deployed contracts</caption>
+          <thead><tr><th>Contract</th><th>Address</th><th>Deployment transaction</th></tr></thead>
+          <tbody>
+            <tr><td>DrainerRegistry</td><td><span class="mono">0x96e57f7F7c2B44482BB1a95F6bc53134e2a411a1</span></td><td><span class="mono">0xa30ffcd93bdce9a68eeeb6bb579646306b2f42f6efc215e6d64b14454cb3d318</span></td></tr>
+            <tr><td>SafeApprove</td><td><span class="mono">0x8ddbB4E933cc11E79Ed82799B263aF837Bf0DF0C</span></td><td><span class="mono">0x6374b8bc51ebaf3b4a1b4495e7d9ddd290242eef27c9fa74c423095b7ef8c2dc</span></td></tr>
+            <tr><td>MockToken (tUSD)</td><td><span class="mono">0x69f76CfFE57cE57863bf78C33D0cb4818E73f0a9</span></td><td><span class="mono">0xd05b75c6353dba5a64c0dc562273ea8adfc525e8fbfc0569eccfa5b38dedc3c6</span></td></tr>
+            <tr><td>DemoDrainer</td><td><span class="mono">0x36a97Eceea628796EFFd9893866D0d4451eEC5c7</span></td><td><span class="mono">0xc7e0a2b5b37bfd0d290b9544743247a7d4b24483124e788266c84b4ec2b4eafb</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The scanner and live demo are published at <a href="https://blucewill.github.io/PortalGuard/" target="_blank" rel="noopener">blucewill.github.io/PortalGuard</a>. The source code is at <a href="https://github.com/Blucewill/PortalGuard" target="_blank" rel="noopener">github.com/Blucewill/PortalGuard</a>.</p>
+    </section>
+
+    <section id="evaluation" data-title="Evaluation">
+      <div class="sec-head"><h2><span class="num">11</span>Evaluation</h2></div>
+      <h3>11.1 Automated tests</h3>
+      <p>The contracts have 14 automated tests, run with Hardhat on a local chain. They cover grants, caps, expiry, revoking, lockdown, flagged spenders and the demo contracts. Shield's detection logic has 8 unit tests covering each request type, revokes and trusted spenders. Shield was also tested in a real Chrome browser with a simulated wallet, confirming that warnings appear, that Cancel returns code 4001 and that Continue forwards the request unchanged.</p>
+      <h3>11.2 Live demonstration</h3>
+      <p>The live demo runs a real approval attack on Portaldot testnet against the user's own wallet with 1,000 worthless test tokens. Table 8 shows the outcome in each scenario.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Table 8. Demo results on Portaldot testnet</caption>
+          <thead><tr><th>Scenario</th><th>Permission given</th><th>Drainer takes</th></tr></thead>
+          <tbody>
+            <tr><td>Without PortalGuard</td><td>Unlimited approval</td><td>1,000 of 1,000 tokens</td></tr>
+            <tr><td>With Shield, user cancels</td><td>None</td><td>0 tokens</td></tr>
+            <tr><td>After scanning and revoking</td><td>Revoked</td><td>0 further tokens</td></tr>
+            <tr><td>With SafeApprove</td><td>10-token grant, 1-hour expiry</td><td>At most 10 tokens</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="security" data-title="Security considerations">
+      <div class="sec-head"><h2><span class="num">12</span>Security considerations and limitations</h2></div>
+      <p>PortalGuard reduces risk. It does not remove it. These are its known limits.</p>
+      <ul>
+        <li><strong>Shield is a safety net, not a guarantee.</strong> It runs in the same page as the website, so a determined malicious site could try to get around it. Building the same checks into wallets would close this gap.</li>
+        <li><strong>SafeApprove requires adoption.</strong> Its protection applies only when an application collects tokens through it. Until applications adopt it, users rely on Shield and the scanner for ordinary approvals.</li>
+        <li><strong>SafeApprove is a concentration of trust.</strong> Users give it an unlimited approval. A flaw in SafeApprove would affect every user, which is why it is deliberately small and why an audit is required before mainnet.</li>
+        <li><strong>The registry has one owner.</strong> A single reviewer can make mistakes or become unavailable. Flags can be removed, and every change is public, but governance must move to several reviewers.</li>
+        <li><strong>Revoking does not recover funds.</strong> It stops future theft only.</li>
+        <li><strong>Testnet only.</strong> The contracts have not been audited and must not be used with real funds.</li>
+      </ul>
+    </section>
+
+    <section id="future" data-title="Future work">
+      <div class="sec-head"><h2><span class="num">13</span>Future work</h2></div>
+      <ul>
+        <li><strong>Wallet integration.</strong> Work with Portaldot wallet teams to show Shield's warnings inside the wallet itself, where a malicious page cannot interfere.</li>
+        <li><strong>Application adoption.</strong> Provide a small developer kit so Portaldot applications can request SafeApprove grants instead of unlimited approvals.</li>
+        <li><strong>Community review.</strong> Replace the single registry owner with several independent reviewers or a voting process.</li>
+        <li><strong>Distribution.</strong> Publish Shield in the Chrome Web Store.</li>
+        <li><strong>Audit and mainnet.</strong> Complete an independent security audit, then deploy to Portaldot mainnet.</li>
+      </ul>
+    </section>
+
+    <section id="conclusion" data-title="Conclusion">
+      <div class="sec-head"><h2><span class="num">14</span>Conclusion</h2></div>
+      <p>Approval drainers succeed because permissions are unlimited, permanent, invisible and explained badly. PortalGuard answers each of those weaknesses: Shield explains a request before it is signed, SafeApprove gives every permission a cap and an expiry, the scanner makes permissions visible and reversible, and the DrainerRegistry shares what one victim learns with everyone else. All four components are deployed and working on Portaldot V3 testnet today.</p>
+      <p>Approve less. Lose nothing.</p>
+    </section>
+
+    <section id="glossary" data-title="Glossary">
+      <div class="sec-head"><h2><span class="num">15</span>Glossary</h2></div>
+      <dl class="glossary">
+        <dt>Allowance</dt><dd>The amount of a token a spender is permitted to move from an owner's wallet.</dd>
+        <dt>Approval</dt><dd>The act of granting an allowance or operator permission, usually through a wallet confirmation.</dd>
+        <dt>Drainer</dt><dd>A malicious contract or website that tricks users into granting permissions, then uses them to take their assets.</dd>
+        <dt>Epoch</dt><dd>A counter kept by SafeApprove for each owner. Grants from an older epoch are invalid. Lockdown increases it by one.</dd>
+        <dt>Grant</dt><dd>A SafeApprove permission with a spending cap and an expiry time.</dd>
+        <dt>Permit</dt><dd>An off-chain signed message that creates an allowance without the user sending a transaction.</dd>
+        <dt>Revoke</dt><dd>To cancel a permission by setting its allowance to zero or turning operator approval off.</dd>
+        <dt>Spender</dt><dd>The address that receives permission to move tokens.</dd>
+      </dl>
+    </section>
+
+    <section id="references" data-title="References">
+      <div class="sec-head"><h2><span class="num">16</span>References</h2></div>
+      <ol class="refs no-read">
+        <li>Scam Sniffer (2025). <em>2024 Web3 Phishing Attacks: Wallet Drainers Drain $494 Million.</em> <a href="https://drops.scamsniffer.io/?p=971" target="_blank" rel="noopener">drops.scamsniffer.io</a></li>
+        <li>Scam Sniffer (2026). <em>2025 Crypto Phishing Losses Fall 83% to $84 Million.</em></li>
+        <li>BleepingComputer (January 2025). <em>Cryptocurrency wallet drainers stole $494 million in 2024.</em></li>
+        <li>Chainalysis (December 2023). <em>Approval phishing: about $1 billion stolen since May 2021.</em></li>
+        <li>The Block (August 2024). <em>Crypto whale loses $55 million in Dai stablecoin to phishing attack.</em> <a href="https://www.theblock.co/post/312326" target="_blank" rel="noopener">theblock.co</a></li>
+        <li>Yahoo News / Wealth of Geeks (29 October 2026). <em>Fake Dating Profiles Led Americans to NFT Sites That Drained Their Crypto.</em></li>
+        <li>The Defiant (October 2026). <em>US Charges Six in Alleged Madagascar NFT Wallet-Draining Scheme.</em></li>
+        <li>EIP-20, EIP-1193, EIP-2612 and EIP-6963. Ethereum Improvement Proposals. <a href="https://eips.ethereum.org" target="_blank" rel="noopener">eips.ethereum.org</a></li>
+        <li>PortalGuard source code and contracts. <a href="https://github.com/Blucewill/PortalGuard" target="_blank" rel="noopener">github.com/Blucewill/PortalGuard</a></li>
+      </ol>
+      <p class="foot no-read">PortalGuard Whitepaper, version 1.0. Built for the Portaldot Network V3.0 Hacker House. MIT licensed.</p>
+    </section>
+  </article>
+</div>
+
+<div class="player" id="player" hidden>
+  <div class="player-inner">
+    <div class="transport">
+      <button class="icon-btn" id="pPrev" type="button" aria-label="Previous paragraph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+      <button class="icon-btn play" id="pPlay" type="button" aria-label="Pause"><svg viewBox="0 0 24 24" fill="currentColor" id="pPlayIcon"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
+      <button class="icon-btn" id="pNext" type="button" aria-label="Next paragraph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      <button class="icon-btn" id="pStop" type="button" aria-label="Stop reading"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg></button>
+    </div>
+    <div class="now" aria-live="polite">
+      <small id="pState">Reading</small>
+      <b id="pSection">Abstract</b>
+      <div class="track"><i id="pTrack"></i></div>
+    </div>
+    <div class="settings">
+      <label for="rate">Speed
+        <select id="rate">
+          <option value="0.8">0.8×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.2">1.2×</option>
+          <option value="1.5">1.5×</option>
+          <option value="1.75">1.75×</option>
+          <option value="2">2×</option>
+        </select>
+      </label>
+      <label for="voice">Voice <select id="voice"></select></label>
+      <label class="toggle" for="follow"><input type="checkbox" id="follow" checked> Follow along</label>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const doc = document.getElementById("doc");
+  const $ = (id) => document.getElementById(id);
+  const hasHighlights = typeof CSS !== "undefined" && "highlights" in CSS && typeof Highlight !== "undefined";
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } },
+  };
+
+  /* ---------- Text helpers shared by search and read-aloud ---------- */
+  // Map an element's text to its text nodes so a character range can become a DOM Range.
+  function textMap(el) {
+    const nodes = [];
+    let text = "";
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      nodes.push({ node: n, start: text.length });
+      text += n.nodeValue;
+    }
+    return { text, nodes };
+  }
+  function rangeFor(map, start, end) {
+    const locate = (pos, isEnd) => {
+      for (let i = map.nodes.length - 1; i >= 0; i--) {
+        const s = map.nodes[i].start;
+        if (pos > s || (pos === s && !isEnd) || i === 0) {
+          return { node: map.nodes[i].node, offset: Math.min(pos - s, map.nodes[i].node.nodeValue.length) };
+        }
+      }
+      return null;
+    };
+    const a = locate(start, false), b = locate(end, true);
+    if (!a || !b) return null;
+    const r = document.createRange();
+    r.setStart(a.node, Math.max(0, a.offset));
+    r.setEnd(b.node, Math.max(0, b.offset));
+    return r;
+  }
+  const headerH = () => document.querySelector(".bar").getBoundingClientRect().height;
+  const playerH = () => (player.hidden ? 0 : player.getBoundingClientRect().height);
+  function sectionTitle(el) {
+    const s = el.closest("section");
+    if (!s) return "Cover";
+    const num = s.querySelector("h2 .num");
+    return (num ? num.textContent + " " : "") + (s.dataset.title || "");
+  }
+  function scrollToRect(rect, offsetRatio = 0.25) {
+    const top = window.scrollY + rect.top - headerH() - window.innerHeight * offsetRatio + 40;
+    window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? "auto" : "smooth" });
+  }
+
+  /* ---------- Contents + scroll spy + progress ---------- */
+  const sections = [...doc.querySelectorAll("section[id]")];
+  const tocList = $("tocList");
+  sections.forEach((s) => {
+    const num = s.querySelector("h2 .num");
+    const li = document.createElement("li");
+    li.innerHTML = `<a href="#${s.id}"><span>${num ? num.textContent : "–"}</span><span>${s.dataset.title}</span></a>`;
+    tocList.appendChild(li);
+  });
+  const tocLinks = [...tocList.querySelectorAll("a")];
+  const tocDetails = $("tocDetails");
+  const wide = matchMedia("(min-width: 961px)");
+  const syncToc = () => { tocDetails.open = wide.matches; };
+  syncToc();
+  wide.addEventListener("change", syncToc);
+  tocList.addEventListener("click", () => { if (!wide.matches) tocDetails.open = false; });
+
+  function onScroll() {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    $("progress").style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + "%";
+    const line = headerH() + window.innerHeight * 0.3;
+    let current = sections[0];
+    for (const s of sections) if (s.getBoundingClientRect().top <= line) current = s;
+    tocLinks.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + current.id));
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  onScroll();
+
+  /* ---------- Search ---------- */
+  const q = $("q"), results = $("results"), count = $("count");
+  const prevHit = $("prevHit"), nextHit = $("nextHit"), kbd = $("kbd");
+  const searchBlocks = [...doc.querySelectorAll("h1, h2, h3, p, li, td, th, caption, figcaption, pre, dt, dd")]
+    .filter((el) => !el.closest(".no-search") && !el.querySelector("p, li, td"));
+  let hits = [], current = -1, debounce;
+
+  function clearSearch() {
+    hits = []; current = -1;
+    if (hasHighlights) { CSS.highlights.delete("search-hit"); CSS.highlights.delete("search-current"); }
+    results.hidden = true; q.setAttribute("aria-expanded", "false");
+    count.textContent = ""; prevHit.hidden = nextHit.hidden = true; kbd.hidden = false;
+  }
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+  function runSearch(term) {
+    clearSearch();
+    term = term.trim();
+    if (term.length < 2) return;
+    const needle = term.toLowerCase();
+    for (const el of searchBlocks) {
+      const map = textMap(el);
+      const hay = map.text.toLowerCase();
+      for (let i = hay.indexOf(needle); i !== -1; i = hay.indexOf(needle, i + needle.length)) {
+        const range = rangeFor(map, i, i + needle.length);
+        if (range) hits.push({ el, range, map, start: i, end: i + needle.length });
+      }
+    }
+    kbd.hidden = true;
+    count.textContent = hits.length ? `${hits.length} result${hits.length === 1 ? "" : "s"}` : "No results";
+    prevHit.hidden = nextHit.hidden = hits.length === 0;
+    if (hasHighlights && hits.length) {
+      const h = new Highlight(...hits.map((x) => x.range));
+      h.priority = 1;
+      CSS.highlights.set("search-hit", h);
+    }
+    renderResults(term);
+  }
+
+  function renderResults(term) {
+    results.innerHTML = "";
+    if (!hits.length) {
+      results.innerHTML = `<div class="empty">No matches for “${esc(term)}”. Try a shorter word.</div>`;
+    } else {
+      hits.slice(0, 60).forEach((hit, i) => {
+        const raw = hit.map.text;
+        const from = Math.max(0, hit.start - 50), to = Math.min(raw.length, hit.end + 70);
+        const before = raw.slice(from, hit.start).replace(/\s+/g, " ");
+        const match = raw.slice(hit.start, hit.end);
+        const after = raw.slice(hit.end, to).replace(/\s+/g, " ");
+        const b = document.createElement("button");
+        b.type = "button"; b.setAttribute("role", "option"); b.dataset.i = i;
+        b.innerHTML = `<span class="where">${esc(sectionTitle(hit.el))}</span>${from > 0 ? "…" : ""}${esc(before)}<mark>${esc(match)}</mark>${esc(after)}${to < raw.length ? "…" : ""}`;
+        results.appendChild(b);
+      });
+      if (hits.length > 60) {
+        const more = document.createElement("div");
+        more.className = "empty";
+        more.textContent = `Showing 60 of ${hits.length}. Use the arrows to step through all of them.`;
+        results.appendChild(more);
+      }
+    }
+    results.hidden = false; q.setAttribute("aria-expanded", "true");
+  }
+
+  function goTo(i, closeList = true) {
+    if (!hits.length) return;
+    current = (i + hits.length) % hits.length;
+    const hit = hits[current];
+    if (hasHighlights) {
+      const h = new Highlight(hit.range);
+      h.priority = 2;
+      CSS.highlights.set("search-current", h);
+    } else {
+      hit.el.classList.remove("flash"); void hit.el.offsetWidth; hit.el.classList.add("flash");
+    }
+    scrollToRect(hit.range.getBoundingClientRect(), 0.3);
+    count.textContent = `${current + 1} of ${hits.length}`;
+    results.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", String(Number(b.dataset.i) === current)));
+    if (closeList) { results.hidden = true; q.setAttribute("aria-expanded", "false"); }
+  }
+
+  q.addEventListener("input", () => { clearTimeout(debounce); debounce = setTimeout(() => runSearch(q.value), 140); });
+  q.addEventListener("focus", () => { if (hits.length || q.value.trim().length >= 2) { results.hidden = false; q.setAttribute("aria-expanded", "true"); } });
+  q.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); goTo(e.shiftKey ? current - 1 : current + 1); }
+    else if (e.key === "Escape") { q.value = ""; clearSearch(); q.blur(); }
+  });
+  results.addEventListener("click", (e) => { const b = e.target.closest("button[data-i]"); if (b) goTo(Number(b.dataset.i)); });
+  prevHit.addEventListener("click", () => goTo(current - 1));
+  nextHit.addEventListener("click", () => goTo(current + 1));
+  document.addEventListener("click", (e) => { if (!e.target.closest(".search")) { results.hidden = true; q.setAttribute("aria-expanded", "false"); } });
+  document.addEventListener("keydown", (e) => {
+    const typing = /INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName || "");
+    if (!typing && (e.key === "/" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k"))) { e.preventDefault(); q.focus(); q.select(); }
+  });
+
+  /* ---------- Read aloud ---------- */
+  const synth = window.speechSynthesis;
+  const player = $("player"), listenBtn = $("listen");
+  const readBlocks = [...doc.querySelectorAll("h1, .subtitle, h2, h3, p, li, caption, figcaption, dt, dd")]
+    .filter((el) => !el.closest(".no-read") && el.textContent.trim());
+  const rateSel = $("rate"), voiceSel = $("voice"), followBox = $("follow");
+  let voices = [];
+  let state = "idle"; // idle | playing | paused
+  let bi = 0, si = 0, sentences = [], blockMap = null, session = 0;
+  let lastUserScroll = 0;
+
+  if (!synth || typeof SpeechSynthesisUtterance === "undefined") {
+    listenBtn.disabled = true;
+    listenBtn.title = "Your browser can't read pages aloud.";
+    listenBtn.querySelector("span").textContent = "Listen unavailable";
+  }
+
+  const savedRate = store.get("pg-wp-rate");
+  if (savedRate) rateSel.value = savedRate;
+  followBox.checked = store.get("pg-wp-follow") !== "off";
+
+  function loadVoices() {
+    if (!synth) return;
+    voices = synth.getVoices();
+    const english = voices.filter((v) => /^en/i.test(v.lang));
+    const list = (english.length ? english : voices).slice().sort((a, b) => (b.localService - a.localService) || a.name.localeCompare(b.name));
+    const saved = store.get("pg-wp-voice");
+    voiceSel.innerHTML = "";
+    list.forEach((v) => {
+      const o = document.createElement("option");
+      o.value = v.voiceURI; o.textContent = `${v.name.replace(/^(Microsoft|Google)\s+/, "")} (${v.lang})`;
+      voiceSel.appendChild(o);
+    });
+    if (saved && list.some((v) => v.voiceURI === saved)) voiceSel.value = saved;
+    voiceSel.disabled = list.length === 0;
+  }
+  if (synth) { loadVoices(); synth.addEventListener?.("voiceschanged", loadVoices); }
+
+  function splitSentences(text) {
+    const out = [];
+    const re = /[^.!?]+(?:[.!?]+["')\]]*|$)\s*/g;
+    let m;
+    while ((m = re.exec(text))) {
+      if (!m[0]) { re.lastIndex++; continue; }
+      const lead = m[0].length - m[0].trimStart().length;
+      const body = m[0].trim();
+      if (body) out.push({ start: m.index + lead, end: m.index + lead + body.length, text: body });
+    }
+    return out.length ? out : [{ start: 0, end: text.length, text: text.trim() }];
+  }
+
+  function clearReading() {
+    readBlocks.forEach((b) => b.classList.remove("reading", "reading-fallback"));
+    if (hasHighlights) { CSS.highlights.delete("tts-sentence"); CSS.highlights.delete("tts-word"); }
+  }
+
+  // Keep the spoken words in view: when they get close to the bottom (or go above the toolbar), scroll them back up.
+  function follow(rect) {
+    if (!followBox.checked || !rect || (!rect.width && !rect.height)) return;
+    if (Date.now() - lastUserScroll < 4000) return;
+    const bottomLimit = window.innerHeight - playerH() - window.innerHeight * 0.18;
+    if (rect.bottom > bottomLimit || rect.top < headerH() + 8) scrollToRect(rect, 0.12);
+  }
+  ["wheel", "touchmove"].forEach((ev) => window.addEventListener(ev, () => { if (state === "playing") lastUserScroll = Date.now(); }, { passive: true }));
+  window.addEventListener("keydown", (e) => { if (state === "playing" && /Arrow|Page|Home|End|^ $/.test(e.key) && !/INPUT|SELECT/.test(document.activeElement?.tagName || "")) lastUserScroll = Date.now(); });
+
+  function setPlayIcon() {
+    const playing = state === "playing";
+    $("pPlayIcon").innerHTML = playing ? '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+    $("pPlay").setAttribute("aria-label", playing ? "Pause" : "Resume");
+    $("pState").textContent = playing ? "Reading" : "Paused";
+    listenBtn.querySelector("span").textContent = playing ? "Pause" : state === "paused" ? "Resume" : "Listen";
+    listenBtn.querySelector("svg").innerHTML = playing ? '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+  }
+  function showPlayer(show) {
+    player.hidden = !show;
+    document.documentElement.style.setProperty("--player-h", show ? player.getBoundingClientRect().height + "px" : "0px");
+  }
+
+  function prepareBlock(i) {
+    bi = Math.max(0, Math.min(i, readBlocks.length - 1));
+    const el = readBlocks[bi];
+    blockMap = textMap(el);
+    sentences = splitSentences(blockMap.text);
+    clearReading();
+    el.classList.add("reading");
+    if (!hasHighlights) el.classList.add("reading-fallback");
+    $("pSection").textContent = sectionTitle(el);
+    $("pTrack").style.width = ((bi + 1) / readBlocks.length) * 100 + "%";
+  }
+
+  function speakCurrent() {
+    const my = ++session;
+    synth.cancel();
+    const sentence = sentences[si];
+    if (!sentence) return next();
+    const u = new SpeechSynthesisUtterance(sentence.text);
+    const v = voices.find((x) => x.voiceURI === voiceSel.value);
+    if (v) { u.voice = v; u.lang = v.lang; }
+    u.rate = Number(rateSel.value) || 1;
+    u.onstart = () => {
+      if (my !== session) return;
+      const r = rangeFor(blockMap, sentence.start, sentence.end);
+      if (hasHighlights && r) { CSS.highlights.set("tts-sentence", new Highlight(r)); CSS.highlights.delete("tts-word"); }
+      follow(r ? r.getBoundingClientRect() : readBlocks[bi].getBoundingClientRect());
+    };
+    u.onboundary = (e) => {
+      if (my !== session || e.name !== "word" || !hasHighlights) return;
+      const from = sentence.start + e.charIndex;
+      let len = e.charLength;
+      if (!len) { const m = /^\S+/.exec(blockMap.text.slice(from)); len = m ? m[0].length : 1; }
+      const r = rangeFor(blockMap, from, Math.min(from + len, sentence.end));
+      if (!r) return;
+      const h = new Highlight(r); h.priority = 3;
+      CSS.highlights.set("tts-word", h);
+      follow(r.getBoundingClientRect());
+    };
+    u.onend = () => { if (my === session && state === "playing") { si++; si < sentences.length ? speakCurrent() : next(); } };
+    u.onerror = (e) => {
+      if (my !== session || e.error === "interrupted" || e.error === "canceled") return;
+      if (state === "playing") { si++; si < sentences.length ? speakCurrent() : next(); }
+    };
+    // Chrome sometimes drops an utterance queued in the same tick as cancel().
+    setTimeout(() => { if (my === session && state === "playing") synth.speak(u); }, 60);
+  }
+
+  function next() {
+    if (bi + 1 >= readBlocks.length) return stop(true);
+    prepareBlock(bi + 1); si = 0; speakCurrent();
+  }
+  function play(fromIndex) {
+    if (!synth) return;
+    state = "playing";
+    showPlayer(true);
+    if (fromIndex !== undefined) { prepareBlock(fromIndex); si = 0; }
+    setPlayIcon();
+    lastUserScroll = 0;
+    speakCurrent();
+  }
+  function pause() {
+    state = "paused"; session++; synth.cancel(); setPlayIcon();
+  }
+  function stop(finished) {
+    state = "idle"; session++; synth?.cancel(); clearReading(); showPlayer(false); setPlayIcon();
+    if (finished) listenBtn.querySelector("span").textContent = "Listen again";
+  }
+  // Start where the reader is: the first readable block below the toolbar.
+  function firstVisibleBlock() {
+    const top = headerH() + 10;
+    const i = readBlocks.findIndex((el) => el.getBoundingClientRect().bottom > top);
+    return i === -1 ? 0 : i;
+  }
+
+  listenBtn.addEventListener("click", () => {
+    if (state === "playing") pause();
+    else if (state === "paused") play();
+    else play(firstVisibleBlock());
+  });
+  $("pPlay").addEventListener("click", () => (state === "playing" ? pause() : play()));
+  $("pStop").addEventListener("click", () => stop(false));
+  $("pPrev").addEventListener("click", () => { const keep = state; play(si > 0 ? bi : bi - 1); if (keep === "paused") pause(); });
+  $("pNext").addEventListener("click", () => { const keep = state; play(bi + 1); if (keep === "paused") pause(); });
+  rateSel.addEventListener("change", () => { store.set("pg-wp-rate", rateSel.value); if (state === "playing") speakCurrent(); });
+  voiceSel.addEventListener("change", () => { store.set("pg-wp-voice", voiceSel.value); if (state === "playing") speakCurrent(); });
+  followBox.addEventListener("change", () => { store.set("pg-wp-follow", followBox.checked ? "on" : "off"); lastUserScroll = 0; });
+
+  // "Listen" button on every section heading.
+  sections.forEach((s) => {
+    const head = s.querySelector(".sec-head");
+    if (!head || !synth) return;
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "sec-listen";
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Listen';
+    b.setAttribute("aria-label", "Listen from " + (s.dataset.title || "this section"));
+    b.addEventListener("click", () => { const i = readBlocks.findIndex((el) => s.contains(el)); play(i === -1 ? 0 : i); });
+    head.appendChild(b);
+  });
+  // While listening, clicking a paragraph jumps the reading there.
+  doc.addEventListener("click", (e) => {
+    if (state === "idle" || e.target.closest("a, button")) return;
+    if (window.getSelection && String(window.getSelection()).length) return;
+    const el = e.target.closest("h1, .subtitle, h2, h3, p, li, caption, figcaption, dt, dd");
+    const i = el ? readBlocks.indexOf(el) : -1;
+    if (i !== -1) { const wasPaused = state === "paused"; play(i); if (wasPaused) pause(); }
+  });
+  window.addEventListener("resize", () => { if (!player.hidden) showPlayer(true); });
+  window.addEventListener("pagehide", () => synth?.cancel());
+})();
+</script>
+</body>
+</html>

@@ -100,6 +100,7 @@ export default function Demo() {
           <a href="./">Home</a>
           <a href="./#scanner">Scanner</a>
           <a href="./demo.html" className="active">Live demo</a>
+          <a href="./whitepaper.html">Whitepaper</a>
         </nav>
         <div className="header-right">
           <button className="pill pill-ghost" onClick={connect}>
