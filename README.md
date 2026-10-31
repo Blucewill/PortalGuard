@@ -164,13 +164,20 @@ worthless test tokens. **Use a separate MetaMask account for it.**
 | Step | What you do | What you see |
 |---|---|---|
 | 1. Get test tokens | Click **Mint 1,000 tUSD**. | Your balance shows 1,000 tUSD. |
-| 2. Fall for the trap | Click **Claim airdrop**. | If Shield is installed, a warning appears before MetaMask opens. Click **Cancel** and nothing is signed. |
-| 3. The attack | Click **Claim airdrop** again, choose to continue, confirm in MetaMask, then click **Run the drainer**. | The drainer takes all of your tUSD. |
+| 2. See how the scam works | Click **Simulate the scam approval**. | If Shield is installed, a warning appears before MetaMask opens. Click **Cancel** and nothing is signed. |
+| 3. The attack | Click **Simulate the scam approval** again, choose to continue, confirm in MetaMask, then click **Run the drainer**. | The drainer takes all of your tUSD. |
 | 4. Scan and revoke | Mint more tokens, open the scanner, click **Revoke** on the flagged approval, then run the drainer again. | The drainer gets nothing. Tokens already stolen stay stolen. |
 | 5. Cap the damage | Click **Use SafeApprove**, then **Run the drainer**. | The drainer can take only the 10 tUSD cap. |
 
 The DemoDrainer contract refuses to deploy on any network except the Portaldot testnet or
 a local test chain, so it can't be used against real funds.
+
+> **Note about MetaMask warnings:** the demo page imitates a real drainer site on purpose, so
+> MetaMask's scam filter may show a warning when you open it. The page is an educational
+> demo: it runs only on the Portaldot testnet, uses worthless test tokens, and the drainer
+> contract refuses to deploy on any other network. You can review all the code in this
+> repository. The [demo video](https://www.youtube.com/watch?v=1P9XiHlHS9c) shows the full
+> flow if you'd rather not continue past the warning.
 
 ## Install PortalGuard Shield
 

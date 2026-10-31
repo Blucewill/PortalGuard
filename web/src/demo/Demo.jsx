@@ -92,7 +92,7 @@ export default function Demo() {
   return (
     <>
       <div className="demo-banner" role="note">
-        PortalGuard demo · Portaldot <strong>testnet only</strong> · uses worthless test tokens (tUSD) from your own wallet
+        <strong>Educational security demo</strong> · Portaldot <strong>testnet only</strong> · simulates a scam with worthless test tokens (tUSD) · no real funds involved
       </div>
       <header className="header">
         <Logo />
@@ -113,7 +113,8 @@ export default function Demo() {
           <p className="eyebrow">Live demo</p>
           <h2>Watch a drainer work. <span className="fade">Then watch it fail.</span></h2>
           <p className="lede">
-            A real approval attack, run on Portaldot testnet against your own wallet with test tokens.
+            This page shows how a wallet drainer works, so you can recognise one. It runs a simulated
+            approval attack on Portaldot testnet against your own wallet, with test tokens that have no value.
             Use a separate demo account in MetaMask for this.
           </p>
         </div>
@@ -144,17 +145,17 @@ export default function Demo() {
             {btn("mint", "Mint 1,000 tUSD", () => mintTestTokens(account), "Minted 1,000 tUSD.", !demoReady)}
           </Step>
 
-          <Step n={2} title="Fall for the trap">
+          <Step n={2} title="See how the scam works">
             <div className="trap-card">
-              <span className="chip chip-high">What victims see</span>
-              <strong>🎁 Claim your 500 tUSD airdrop</strong>
-              <span className="sub">"Just confirm in your wallet to receive your reward."</span>
+              <span className="chip chip-high">Simulation · example scam message</span>
+              <strong>"Claim your free tokens"</strong>
+              <span className="sub">Scam sites say things like this to get you to confirm in your wallet.</span>
             </div>
             <p>
-              The button really asks for an <strong>unlimited approval</strong> for the drainer contract.
-              Your wallet shows it as a spending cap, and most people click Confirm.
+              Behind a message like that, the site really asks for an <strong>unlimited approval</strong> for the
+              drainer contract. Your wallet shows it as a spending cap, and most people click Confirm.
             </p>
-            {btn("approve", "Claim airdrop (approve)", approveUnlimited, "Unlimited approval given.", !demoReady)}
+            {btn("approve", "Simulate the scam approval", approveUnlimited, "Unlimited approval given (simulation).", !demoReady)}
           </Step>
 
           <Step n={3} title="The attack" tone="danger">
