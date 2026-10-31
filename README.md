@@ -9,7 +9,7 @@ give apps small, time-limited permissions instead of unlimited ones.
 
 Built for the Portaldot Network V3.0 Hacker House on DoraHacks.
 
-- **Demo video:** _add your link here_
+- **Demo video:** [Watch on YouTube](https://www.youtube.com/watch?v=1P9XiHlHS9c)
 - **Network:** Portaldot V3 testnet. All four contracts are deployed; see [Deployed contracts](#deployed-contracts).
 
 ---
